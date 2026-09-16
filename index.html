@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ricoh Shield &bull; Whitelist Control Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Toast Notification Container (shadcn/ui style) -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <!-- Login Modal (shadcn/ui Dialog) -->
+    <div id="login-modal" class="modal-overlay active">
+        <div class="modal-card">
+            <div class="modal-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem; margin-bottom: 1.5rem;">
+                <div class="brand-icon" style="width: 42px; height: 42px; border-radius: 8px;">
+                    <svg class="morph-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.25rem;">Admin Authentication</h3>
+                    <p style="font-size: 0.8125rem; color: hsl(var(--muted-foreground)); margin-top: 0.2rem;">Connect your web dashboard to your Ricoh Shield API backend.</p>
+                </div>
+            </div>
+            <form id="login-form">
+                <div class="input-group">
+                    <label for="server-url-input">VPS API URL</label>
+                    <input type="text" id="server-url-input" placeholder="http://103.186.30.230:9017" required>
+                </div>
+                <div class="input-group">
+                    <label for="admin-secret-input">Dashboard Password / Secret</label>
+                    <input type="password" id="admin-secret-input" placeholder="••••••••••••••••" required>
+                </div>
+                <div id="login-error" class="hidden" style="color: var(--rose-500); font-size: 0.8125rem; margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: rgba(244,63,94,0.1); border: 1px solid rgba(244,63,94,0.25); border-radius: 6px;"></div>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <span>Connect & Unlock</span>
+                    <svg class="morph-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application Layout -->
+    <div id="app-layout" class="app-container">
+        <!-- Sidebar Navigation (shadcn/ui style) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <svg class="morph-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <div class="brand-info">
+                    <span class="brand-name">RICOH SHIELD</span>
+                    <span class="brand-subtitle">Whitelist System</span>
+                </div>
+                <span class="brand-badge">v2.0</span>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-category">Main Menu</div>
+                
+                <button class="nav-item active" data-tab="overview" id="nav-overview">
+                    <div class="nav-icon">
+                        <svg class="morph-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                        </svg>
+                    </div>
+                    <span>Overview</span>
+                </button>
+
+                <button class="nav-item" data-tab="keys" id="nav-keys">
+                    <div class="nav-icon">
+                        <svg class="morph-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 2l-2 2m-1-1l-3 3m3-3l2 2m-2-2l-3 3"></path>
+                            <circle cx="7.5" cy="15.5" r="5.5"></circle>
+                            <path d="m11.5 11.5 8.5-8.5"></path>
+                        </svg>
+                    </div>
+                    <span>License Keys</span>
+                </button>
+
+                <button class="nav-item" data-tab="global-key" id="nav-global-key">
+                    <div class="nav-icon">
+                        <svg class="morph-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="2" y1="12" x2="22" y2="12"></line>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                        </svg>
+                    </div>
+                    <span>Global Key</span>
+                </button>
+
+                <button class="nav-item" data-tab="logs" id="nav-logs">
+                    <div class="nav-icon">
+                        <svg class="morph-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                    </div>
+                    <span>Verification Logs</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="server-status-pill">
+                    <span class="status-dot"></span>
+                    <span id="connected-server-label" class="server-label">Connecting...</span>
+                </div>
+                <button id="logout-btn" class="btn btn-ghost btn-sm" style="justify-content: flex-start;">
+                    <svg class="morph-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span>Disconnect</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="page-header">
+                    <h1 id="page-title">Dashboard Overview</h1>
+                    <p class="subtitle">Cloud Whitelist Control Panel</p>
+                </div>
+                <div class="top-actions">
+                    <button class="btn btn-outline btn-sm" id="refresh-btn" title="Refresh Data">
+                        <svg class="morph-icon-svg" id="refresh-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                        </svg>
+                        <span>Refresh</span>
+                    </button>
+                    <button class="btn btn-primary btn-sm" id="open-gen-modal-btn">
+                        <svg class="morph-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Generate Key</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- TAB 1: OVERVIEW -->
+            <section id="tab-overview" class="tab-panel active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Total Generated Keys</span>
+                            <span class="stat-value" id="stat-total-keys">0</span>
+                            <span class="stat-subtext">Registered on server</span>
+                        </div>
+                        <div class="stat-icon purple">
+                            <svg class="morph-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Active Licenses</span>
+                            <span class="stat-value" id="stat-active-keys">0</span>
+                            <span class="stat-subtext">Valid & unexpired</span>
+                        </div>
+                        <div class="stat-icon green">
+                            <svg class="morph-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Claimed by Users</span>
+                            <span class="stat-value" id="stat-claimed-keys">0</span>
+                            <span class="stat-subtext">Linked to Discord accounts</span>
+                        </div>
+                        <div class="stat-icon blue">
+                            <svg class="morph-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label">Device Bindings</span>
+                            <span class="stat-value" id="stat-bindings">0</span>
+                            <span class="stat-subtext">Locked HWID client IDs</span>
+                        </div>
+                        <div class="stat-icon yellow">
+                            <svg class="morph-icon-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-banner card">
+                    <div class="glass-banner-info">
+                        <div class="pill-badge" id="overview-global-pill">Global Key: Active</div>
+                        <h2>Public Free-Access Key</h2>
+                        <p>Allow players to test your script with the shared global key without requiring Discord verification.</p>
+                        <div class="code-box-wrapper">
+                            <code class="code-box" id="overview-global-key-code">GLOBAL-FREE-2026</code>
+                            <button class="btn btn-outline btn-sm" id="copy-global-key-btn">
+                                <svg class="morph-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="document.querySelector('[data-tab=global-key]').click()">
+                        <span>Configure Global Key</span>
+                        <svg class="morph-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- TAB 2: KEYS MANAGEMENT -->
+            <section id="tab-keys" class="tab-panel">
+                <div class="card table-card">
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <svg class="search-icon morph-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="keys-search-input" class="search-input" placeholder="Search by prefix, Discord ID, note...">
+                        </div>
+                        <div class="filter-group">
+                            <select id="keys-status-filter" class="select-input">
+                                <option value="">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="revoked">Revoked</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                            <select id="keys-tier-filter" class="select-input">
+                                <option value="">All Tiers</option>
+                                <option value="free">Free</option>
+                                <option value="premium">Premium</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Key Prefix</th>
+                                    <th>Tier</th>
+                                    <th>Status</th>
+                                    <th>Claimed By (Discord)</th>
+                                    <th>Devices</th>
+                                    <th>Expires</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="keys-table-body">
+                                <tr><td colspan="7" class="text-center">Loading keys...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: GLOBAL KEY SETTINGS -->
+            <section id="tab-global-key" class="tab-panel">
+                <div class="card form-card">
+                    <div class="form-header">
+                        <h2>Global Key Configuration</h2>
+                        <p>Configure the public shared key for unwhitelisted or trial users.</p>
+                    </div>
+
+                    <form id="global-key-form">
+                        <div class="form-switch-row">
+                            <div>
+                                <h4>Enable Global Key</h4>
+                                <p class="subtext">When enabled, anyone can authenticate with this key and receive free-tier features.</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="gk-enable-switch">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="gk-key-input">Global Key Value</label>
+                            <input type="text" id="gk-key-input" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="gk-features-input">Entitled Features (Comma Separated)</label>
+                            <input type="text" id="gk-features-input" value="basic" placeholder="basic, standard, demo">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="gk-note-input">Public Announcement / Note</label>
+                            <input type="text" id="gk-note-input" placeholder="Free trial access for community members">
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="save-gk-btn">
+                                <svg class="morph-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                <span>Save Changes</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- TAB 4: VERIFICATION LOGS -->
+            <section id="tab-logs" class="tab-panel">
+                <div class="card table-card">
+                    <div class="table-toolbar">
+                        <div>
+                            <h2 style="font-size: 1.125rem; font-weight: 700;">Recent Verifications</h2>
+                            <p style="font-size: 0.8125rem; color: hsl(var(--muted-foreground));">Real-time incoming request telemetry from Roblox executors.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Key Identifier</th>
+                                    <th>Status</th>
+                                    <th>Reason</th>
+                                    <th>Tier</th>
+                                    <th>Client Hash</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body">
+                                <tr><td colspan="6" class="text-center">Loading logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Generate Key Modal (shadcn/ui Dialog) -->
+    <div id="gen-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h3>Generate New License</h3>
+                    <p style="font-size: 0.8125rem; color: hsl(var(--muted-foreground)); margin-top: 0.2rem;">Create custom whitelist licenses with tier and duration limits.</p>
+                </div>
+                <button class="close-modal" id="close-gen-modal" aria-label="Close">&times;</button>
+            </div>
+            <form id="gen-key-form">
+                <div class="input-group">
+                    <label for="gen-tier">License Tier</label>
+                    <select id="gen-tier" class="select-input">
+                        <option value="premium">Premium (VIP Modules)</option>
+                        <option value="enterprise">Enterprise (Unlimited Modules)</option>
+                        <option value="free">Free / Basic</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="gen-duration">Duration (Days, 0 = Lifetime)</label>
+                    <input type="number" id="gen-duration" value="30" min="0" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="gen-max-clients">Max Device Bindings</label>
+                    <input type="number" id="gen-max-clients" value="1" min="1" max="10" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="gen-qty">Quantity to Generate</label>
+                    <input type="number" id="gen-qty" value="1" min="1" max="25" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="gen-note">Admin Note / User Tag</label>
+                    <input type="text" id="gen-note" placeholder="e.g. VIP Giveaway / Buyer Discord">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="submit-gen-btn">
+                    <svg class="morph-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Generate Keys</span>
+                </button>
+            </form>
+
+            <div id="gen-result" class="gen-result-box hidden">
+                <h4>Created Keys (Copy Now &bull; Plaintext won't be shown again):</h4>
+                <div id="gen-keys-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal (shadcn/ui Confirm Dialog) -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 id="confirm-modal-title">Confirm Action</h3>
+                <button class="close-modal" id="close-confirm-modal">&times;</button>
+            </div>
+            <p id="confirm-modal-message" style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 1.5rem;"></p>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button class="btn btn-outline" id="confirm-cancel-btn">Cancel</button>
+                <button class="btn btn-destructive" id="confirm-accept-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
