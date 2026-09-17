@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <!-- Toast Notification Container (shadcn/ui style) -->
@@ -215,6 +216,108 @@
                                 <line x1="6" y1="6" x2="6.01" y2="6"></line>
                                 <line x1="6" y1="18" x2="6.01" y2="18"></line>
                             </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OVERVIEW CHARTS VISUALIZATION -->
+                <div class="charts-grid">
+                    <!-- Main Activity Chart (Hero Area / Line Chart) -->
+                    <div class="card chart-card chart-hero">
+                        <div class="chart-header">
+                            <div class="chart-title-group">
+                                <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                                    <h3>Verification & Key Activity</h3>
+                                    <span class="live-indicator">
+                                        <span class="pulse-dot"></span>
+                                        <span>Live 7-Day Trend</span>
+                                    </span>
+                                </div>
+                                <p class="chart-subtitle">Daily script access verifications (successful vs denied) and newly generated license keys</p>
+                            </div>
+                            <div class="chart-legend-tabs" id="activity-chart-legend">
+                                <span class="legend-pill" style="--pill-color: var(--emerald-500);">
+                                    <span class="legend-circle"></span>
+                                    <span>Success</span>
+                                </span>
+                                <span class="legend-pill" style="--pill-color: var(--rose-500);">
+                                    <span class="legend-circle"></span>
+                                    <span>Denied</span>
+                                </span>
+                                <span class="legend-pill" style="--pill-color: var(--violet-500);">
+                                    <span class="legend-circle"></span>
+                                    <span>New Keys</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="chart-body chart-body-activity">
+                            <canvas id="overview-activity-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Donut Chart 1: License Status Distribution -->
+                    <div class="card chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title-group">
+                                <h3>License Health & Status</h3>
+                                <p class="chart-subtitle">Real-time status breakdown across all licenses</p>
+                            </div>
+                        </div>
+                        <div class="chart-body donut-body">
+                            <div class="donut-wrapper">
+                                <canvas id="overview-status-chart"></canvas>
+                                <div class="donut-center-metric">
+                                    <span class="donut-metric-val" id="chart-active-pct">0%</span>
+                                    <span class="donut-metric-lbl">Active</span>
+                                </div>
+                            </div>
+                            <div class="chart-custom-legend" id="status-legend-container">
+                                <div class="legend-row">
+                                    <div class="legend-meta"><span class="legend-sq" style="background: var(--emerald-500);"></span> Active Keys</div>
+                                    <strong id="legend-status-active">0</strong>
+                                </div>
+                                <div class="legend-row">
+                                    <div class="legend-meta"><span class="legend-sq" style="background: var(--amber-500);"></span> Expired Keys</div>
+                                    <strong id="legend-status-expired">0</strong>
+                                </div>
+                                <div class="legend-row">
+                                    <div class="legend-meta"><span class="legend-sq" style="background: var(--rose-500);"></span> Revoked Keys</div>
+                                    <strong id="legend-status-revoked">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Donut Chart 2: Tier & Claim Distribution -->
+                    <div class="card chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title-group">
+                                <h3>Tier & Discord Claim</h3>
+                                <p class="chart-subtitle">Subscription packages and user claim ratio</p>
+                            </div>
+                        </div>
+                        <div class="chart-body donut-body">
+                            <div class="donut-wrapper">
+                                <canvas id="overview-tier-chart"></canvas>
+                                <div class="donut-center-metric">
+                                    <span class="donut-metric-val" id="chart-claimed-pct">0%</span>
+                                    <span class="donut-metric-lbl">Claimed</span>
+                                </div>
+                            </div>
+                            <div class="chart-custom-legend" id="tier-legend-container">
+                                <div class="legend-row">
+                                    <div class="legend-meta"><span class="legend-sq" style="background: var(--violet-500);"></span> Premium Tier</div>
+                                    <strong id="legend-tier-premium">0</strong>
+                                </div>
+                                <div class="legend-row">
+                                    <div class="legend-meta"><span class="legend-sq" style="background: var(--blue-500);"></span> Other Tiers</div>
+                                    <strong id="legend-tier-other">0</strong>
+                                </div>
+                                <div class="legend-row">
+                                    <div class="legend-meta"><span class="legend-sq" style="background: #06b6d4;"></span> Discord Claimed</div>
+                                    <strong id="legend-tier-claimed">0</strong>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

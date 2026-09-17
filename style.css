@@ -520,7 +520,241 @@ body {
 .stat-icon.purple { color: var(--violet-500); border-color: rgba(139, 92, 246, 0.25); background: var(--violet-glow); }
 .stat-icon.green  { color: var(--emerald-500); border-color: rgba(16, 185, 129, 0.25); background: var(--emerald-glow); }
 .stat-icon.blue   { color: var(--blue-500); border-color: rgba(59, 130, 246, 0.25); background: rgba(59, 130, 246, 0.1); }
-.stat-icon.yellow { color: var(--amber-500); border-color: rgba(245, 158, 11, 0.25); background: rgba(245, 158, 11, 0.1); }
+/* --------------------------------------------------------------------------
+   Overview Charts Grid & Visualization (Shadcn/UI Dark Glass Theme)
+   -------------------------------------------------------------------------- */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-lg);
+    padding: 1.35rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: var(--transition-spring);
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-card:hover {
+    border-color: hsl(var(--muted-foreground) / 0.35);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.chart-hero {
+    grid-column: span 12;
+}
+
+@media (min-width: 1200px) {
+    .chart-hero {
+        grid-column: span 6;
+    }
+    .charts-grid > .chart-card:not(.chart-hero) {
+        grid-column: span 3;
+    }
+}
+
+@media (max-width: 1199px) and (min-width: 768px) {
+    .chart-hero {
+        grid-column: span 12;
+    }
+    .charts-grid > .chart-card:not(.chart-hero) {
+        grid-column: span 6;
+    }
+}
+
+@media (max-width: 767px) {
+    .chart-hero,
+    .charts-grid > .chart-card:not(.chart-hero) {
+        grid-column: span 12;
+    }
+}
+
+.chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.chart-title-group h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    letter-spacing: -0.02em;
+}
+
+.chart-subtitle {
+    font-size: 0.775rem;
+    color: hsl(var(--muted-foreground));
+    margin-top: 0.25rem;
+    line-height: 1.4;
+}
+
+/* Live Activity Indicator */
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.725rem;
+    font-weight: 500;
+    color: var(--emerald-500);
+    background: var(--emerald-glow);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+}
+
+.pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--emerald-500);
+    box-shadow: 0 0 8px var(--emerald-500);
+    animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.2); }
+}
+
+/* Legend Tabs on Hero Chart */
+.chart-legend-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.legend-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border));
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    transition: var(--transition-spring);
+}
+
+.legend-circle {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--pill-color, var(--emerald-500));
+}
+
+/* Activity Chart Body */
+.chart-body-activity {
+    height: 250px;
+    position: relative;
+    width: 100%;
+}
+
+/* Donut Chart Presentation */
+.donut-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    min-height: 250px;
+}
+
+.donut-wrapper {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.donut-wrapper canvas {
+    position: relative;
+    z-index: 2;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.donut-center-metric {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.donut-metric-val {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.donut-metric-lbl {
+    font-size: 0.7rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.15rem;
+}
+
+/* Custom Chart Legend List */
+.chart-custom-legend {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-top: 1px solid hsl(var(--border) / 0.6);
+    padding-top: 0.85rem;
+}
+
+.legend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.775rem;
+    color: hsl(var(--muted-foreground));
+}
+
+.legend-row strong {
+    color: hsl(var(--foreground));
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.825rem;
+}
+
+.legend-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-sq {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    display: inline-block;
+}
 
 /* Banner Card (Global Key Overview) */
 .glass-banner {
