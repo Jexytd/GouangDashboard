@@ -1,5 +1,8 @@
 // Whitelist Admin Dashboard Controller (shadcn/ui & Morphicon Edition)
-let serverUrl = localStorage.getItem('ricoh_server_url') || 'http://103.186.30.230:3000';
+const defaultOrigin = (typeof window !== 'undefined' && window.location && window.location.origin && !window.location.origin.startsWith('file:'))
+    ? window.location.origin
+    : 'http://103.186.30.230';
+let serverUrl = localStorage.getItem('ricoh_server_url') || defaultOrigin;
 let adminSecret = localStorage.getItem('ricoh_admin_secret') || '';
 
 // DOM Elements
