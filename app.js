@@ -234,7 +234,10 @@ navItems.forEach(item => {
             'overview': 'Dashboard Overview',
             'keys': 'License Keys Management',
             'global-key': 'Global Key Configuration',
-            'logs': 'Verification Activity Logs'
+            'logs': 'Verification Activity Logs',
+            'discord-config': 'Discord Server & Channels Configuration',
+            'discord-tickets': 'Support Tickets Management',
+            'discord-moderation': 'Server Moderation Cases'
         };
         pageTitle.textContent = titles[tab] || 'Dashboard';
 
@@ -242,6 +245,9 @@ navItems.forEach(item => {
         if (tab === 'keys') loadKeys();
         if (tab === 'global-key') loadGlobalKey();
         if (tab === 'logs') loadLogs();
+        if (tab === 'discord-config') loadDiscordGuilds();
+        if (tab === 'discord-tickets') loadDiscordTickets();
+        if (tab === 'discord-moderation') loadDiscordModeration();
     });
 });
 
@@ -259,6 +265,9 @@ refreshBtn.addEventListener('click', async () => {
     if (activeTab === 'keys') await loadKeys();
     if (activeTab === 'global-key') await loadGlobalKey();
     if (activeTab === 'logs') await loadLogs();
+    if (activeTab === 'discord-config') await loadDiscordGuilds();
+    if (activeTab === 'discord-tickets') await loadDiscordTickets();
+    if (activeTab === 'discord-moderation') await loadDiscordModeration();
 
     showToast({ title: 'Refreshed', message: 'Dashboard telemetry updated', type: 'info', duration: 2000 });
 });
@@ -783,6 +792,297 @@ genKeyForm.addEventListener('submit', async (e) => {
         submitBtn.innerHTML = originalBtnHtml;
     }
 });
+
+// --------------------------------------------------------------------------
+// 5. Discord Server & Channels Configuration
+// --------------------------------------------------------------------------
+const discordGuildSelect = document.getElementById('discord-guild-select');
+const guildInfoBanner = document.getElementById('guild-info-banner');
+const guildBannerIcon = document.getElementById('guild-banner-icon');
+const guildBannerName = document.getElementById('guild-banner-name');
+const guildBannerId = document.getElementById('guild-banner-id');
+const guildBannerMembers = document.getElementById('guild-banner-members');
+
+const discordConfigForm = document.getElementById('discord-config-form');
+const cfgModLog = document.getElementById('cfg-mod-log');
+const cfgWelcome = document.getElementById('cfg-welcome');
+const cfgLeave = document.getElementById('cfg-leave');
+const cfgTicketLog = document.getElementById('cfg-ticket-log');
+const cfgTicketCat = document.getElementById('cfg-ticket-cat');
+const cfgStaffRole = document.getElementById('cfg-staff-role');
+const cfgMemberRole = document.getElementById('cfg-member-role');
+const cfgVerifyRole = document.getElementById('cfg-verify-role');
+const cfgWelcomeMsg = document.getElementById('cfg-welcome-msg');
+const saveDiscordConfigBtn = document.getElementById('save-discord-config-btn');
+
+let currentGuilds = [];
+
+async function loadDiscordGuilds() {
+    if (!discordGuildSelect) return;
+    discordGuildSelect.innerHTML = '<option value="">Loading servers...</option>';
+
+    try {
+        const res = await apiCall('/api/v1/admin/discord/guilds');
+        if (res.success && res.guilds) {
+            currentGuilds = res.guilds;
+
+            if (currentGuilds.length === 0) {
+                discordGuildSelect.innerHTML = '<option value="">No servers found (Make sure bot is online and joined a server)</option>';
+                if (guildInfoBanner) guildInfoBanner.classList.add('hidden');
+                return;
+            }
+
+            discordGuildSelect.innerHTML = currentGuilds.map(g => `
+                <option value="${g.id}">${g.name} (${g.memberCount} members)</option>
+            `).join('');
+
+            const selectedGuildId = discordGuildSelect.value;
+            if (selectedGuildId) {
+                loadGuildDetails(selectedGuildId);
+            }
+        }
+    } catch (err) {
+        console.error("Failed to load guilds:", err);
+        discordGuildSelect.innerHTML = '<option value="">Error loading servers from backend</option>';
+    }
+}
+
+if (discordGuildSelect) {
+    discordGuildSelect.addEventListener('change', (e) => {
+        const guildId = e.target.value;
+        if (guildId) {
+            loadGuildDetails(guildId);
+        }
+    });
+}
+
+async function loadGuildDetails(guildId) {
+    if (!guildId) return;
+
+    try {
+        const res = await apiCall(`/api/v1/admin/discord/guilds/${guildId}/details`);
+        if (!res.success) throw new Error(res.error?.message || 'Failed to fetch details');
+
+        const { guild, channels = [], roles = [], config = {} } = res;
+
+        // 1. Update Guild Banner
+        if (guildInfoBanner) {
+            guildInfoBanner.classList.remove('hidden');
+            guildBannerName.textContent = guild.name || `Server ${guild.id}`;
+            guildBannerId.textContent = guild.id;
+            guildBannerMembers.textContent = guild.memberCount || 0;
+
+            if (guild.icon) {
+                guildBannerIcon.src = guild.icon;
+                guildBannerIcon.style.display = 'block';
+            } else {
+                guildBannerIcon.style.display = 'none';
+            }
+        }
+
+        // 2. Separate text channels and category channels
+        const textChannels = channels.filter(c => c.type === 0 || c.type === 'GuildText' || !c.type || c.type === 5);
+        const categoryChannels = channels.filter(c => c.type === 4 || c.type === 'GuildCategory');
+
+        const channelOptionsHtml = '<option value="">-- None (Disabled) --</option>' +
+            textChannels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+
+        const categoryOptionsHtml = '<option value="">-- None (Root category) --</option>' +
+            categoryChannels.map(c => `<option value="${c.id}">📁 ${c.name}</option>`).join('');
+
+        const roleOptionsHtml = '<option value="">-- None --</option>' +
+            roles.filter(r => r.name !== '@everyone').map(r => `<option value="${r.id}">@ ${r.name}</option>`).join('');
+
+        // Populate selects
+        if (cfgModLog) cfgModLog.innerHTML = channelOptionsHtml;
+        if (cfgWelcome) cfgWelcome.innerHTML = channelOptionsHtml;
+        if (cfgLeave) cfgLeave.innerHTML = channelOptionsHtml;
+        if (cfgTicketLog) cfgTicketLog.innerHTML = channelOptionsHtml;
+        if (cfgTicketCat) cfgTicketCat.innerHTML = categoryOptionsHtml;
+
+        if (cfgStaffRole) cfgStaffRole.innerHTML = roleOptionsHtml;
+        if (cfgMemberRole) cfgMemberRole.innerHTML = roleOptionsHtml;
+        if (cfgVerifyRole) cfgVerifyRole.innerHTML = roleOptionsHtml;
+
+        // Set values from existing config
+        if (cfgModLog) cfgModLog.value = config.modLogChannelId || '';
+        if (cfgWelcome) cfgWelcome.value = config.welcomeChannelId || '';
+        if (cfgLeave) cfgLeave.value = config.leaveChannelId || '';
+        if (cfgTicketLog) cfgTicketLog.value = config.ticketLogChannelId || '';
+        if (cfgTicketCat) cfgTicketCat.value = config.ticketCategoryId || '';
+
+        if (cfgStaffRole) cfgStaffRole.value = config.staffRoleId || '';
+        if (cfgMemberRole) cfgMemberRole.value = config.memberRoleId || '';
+        if (cfgVerifyRole) cfgVerifyRole.value = config.verificationRoleId || '';
+
+        if (cfgWelcomeMsg) cfgWelcomeMsg.value = config.welcomeMessage || '';
+    } catch (err) {
+        console.error("Failed to load guild details:", err);
+        showToast({ title: 'Error', message: 'Failed to load server channels and roles.', type: 'error' });
+    }
+}
+
+// Handle Discord Config Save Form
+if (discordConfigForm) {
+    discordConfigForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const guildId = discordGuildSelect?.value;
+        if (!guildId) {
+            showToast({ title: 'Warning', message: 'Please select a Discord server first.', type: 'error' });
+            return;
+        }
+
+        const payload = {
+            modLogChannelId: cfgModLog?.value || null,
+            welcomeChannelId: cfgWelcome?.value || null,
+            leaveChannelId: cfgLeave?.value || null,
+            ticketLogChannelId: cfgTicketLog?.value || null,
+            ticketCategoryId: cfgTicketCat?.value || null,
+            staffRoleId: cfgStaffRole?.value || null,
+            memberRoleId: cfgMemberRole?.value || null,
+            verificationRoleId: cfgVerifyRole?.value || null,
+            welcomeMessage: cfgWelcomeMsg?.value.trim() || null
+        };
+
+        const originalBtnHtml = saveDiscordConfigBtn.innerHTML;
+        saveDiscordConfigBtn.disabled = true;
+        saveDiscordConfigBtn.innerHTML = '<span>Saving...</span>';
+
+        try {
+            const res = await apiCall(`/api/v1/admin/discord/guilds/${guildId}/config`, 'PUT', payload);
+            if (res.success) {
+                showToast({
+                    title: 'Settings Saved',
+                    message: 'Server channels and roles updated successfully.',
+                    type: 'success'
+                });
+            } else {
+                showToast({ title: 'Error', message: res.error?.message || 'Update failed', type: 'error' });
+            }
+        } catch (err) {
+            console.error("Config save error:", err);
+            showToast({ title: 'Error', message: 'Failed to save configuration to backend.', type: 'error' });
+        } finally {
+            saveDiscordConfigBtn.disabled = false;
+            saveDiscordConfigBtn.innerHTML = originalBtnHtml;
+        }
+    });
+}
+
+// --------------------------------------------------------------------------
+// 6. Support Tickets Management Tab
+// --------------------------------------------------------------------------
+const ticketsTableBody = document.getElementById('tickets-table-body');
+const ticketsStatusFilter = document.getElementById('tickets-status-filter');
+
+async function loadDiscordTickets() {
+    if (!ticketsTableBody) return;
+    ticketsTableBody.innerHTML = '<tr><td colspan="8" class="text-center">Loading tickets...</td></tr>';
+
+    const status = ticketsStatusFilter ? ticketsStatusFilter.value : '';
+    let endpoint = '/api/v1/admin/discord/tickets?limit=50';
+    if (status) endpoint += `&status=${encodeURIComponent(status)}`;
+
+    try {
+        const res = await apiCall(endpoint);
+        if (res.success && res.tickets) {
+            if (res.tickets.length === 0) {
+                ticketsTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No tickets found.</td></tr>';
+                return;
+            }
+
+            ticketsTableBody.innerHTML = res.tickets.map(t => {
+                const statusBadge = t.status === 'open'
+                    ? '<span class="badge badge-emerald">OPEN</span>'
+                    : (t.status === 'claimed'
+                        ? '<span class="badge badge-violet">CLAIMED</span>'
+                        : '<span class="badge badge-gray">CLOSED</span>');
+
+                const createdDate = t.createdAt ? new Date(t.createdAt).toLocaleString() : '-';
+                const claimed = t.claimedBy ? `<span style="color: hsl(var(--primary)); font-weight: 600;">${t.claimedBy.tag || t.claimedBy.id}</span>` : '<span class="text-muted">Unclaimed</span>';
+                const resolution = t.closeReason ? `<span style="font-size: 0.8rem; color: hsl(var(--muted-foreground));">${t.closeReason}</span>` : '<span class="text-muted">-</span>';
+
+                return `
+                    <tr>
+                        <td><code class="font-mono" style="font-weight: 700; color: hsl(var(--primary));">${t.id}</code></td>
+                        <td><code class="font-mono text-muted">${t.guildId}</code></td>
+                        <td><strong>${t.userTag || t.userId}</strong></td>
+                        <td><span class="badge badge-indigo">${(t.category || 'general').toUpperCase()}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>${claimed}</td>
+                        <td style="font-size: 0.8125rem; white-space: nowrap;">${createdDate}</td>
+                        <td>${resolution}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    } catch (err) {
+        console.error("Tickets error:", err);
+        ticketsTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Error loading tickets.</td></tr>';
+    }
+}
+
+if (ticketsStatusFilter) {
+    ticketsStatusFilter.addEventListener('change', () => loadDiscordTickets());
+}
+
+// --------------------------------------------------------------------------
+// 7. Moderation Cases Tab
+// --------------------------------------------------------------------------
+const moderationTableBody = document.getElementById('moderation-table-body');
+const moderationActionFilter = document.getElementById('moderation-action-filter');
+
+async function loadDiscordModeration() {
+    if (!moderationTableBody) return;
+    moderationTableBody.innerHTML = '<tr><td colspan="7" class="text-center">Loading moderation cases...</td></tr>';
+
+    const action = moderationActionFilter ? moderationActionFilter.value : '';
+    let endpoint = '/api/v1/admin/discord/moderation?limit=50';
+    if (action) endpoint += `&action=${encodeURIComponent(action)}`;
+
+    try {
+        const res = await apiCall(endpoint);
+        if (res.success && res.cases) {
+            if (res.cases.length === 0) {
+                moderationTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No moderation cases recorded.</td></tr>';
+                return;
+            }
+
+            const badgeStyles = {
+                WARN: 'badge-amber',
+                TIMEOUT: 'badge-amber',
+                UNTIMEOUT: 'badge-emerald',
+                KICK: 'badge-rose',
+                BAN: 'badge-rose',
+                UNBAN: 'badge-emerald'
+            };
+
+            moderationTableBody.innerHTML = res.cases.map(c => {
+                const badgeClass = badgeStyles[c.action] || 'badge-gray';
+                const createdDate = c.createdAt ? new Date(c.createdAt).toLocaleString() : '-';
+
+                return `
+                    <tr>
+                        <td><code class="font-mono" style="font-weight: 700;">#${c.id}</code></td>
+                        <td><span class="badge ${badgeClass}">${c.action}</span></td>
+                        <td><strong>${c.targetTag || c.targetId}</strong></td>
+                        <td>${c.moderatorTag || c.moderatorId}</td>
+                        <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${c.reason || 'None'}</td>
+                        <td>${c.duration ? `<span class="badge badge-gray">${c.duration}</span>` : '-'}</td>
+                        <td style="font-size: 0.8125rem; white-space: nowrap;">${createdDate}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    } catch (err) {
+        console.error("Moderation error:", err);
+        moderationTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Error loading moderation cases.</td></tr>';
+    }
+}
+
+if (moderationActionFilter) {
+    moderationActionFilter.addEventListener('change', () => loadDiscordModeration());
+}
 
 // Helper: Debounce function
 function debounce(func, wait) {

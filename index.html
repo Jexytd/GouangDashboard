@@ -114,6 +114,40 @@
                     </div>
                     <span>Verification Logs</span>
                 </button>
+
+                <div class="nav-category" style="margin-top: 1.25rem;">Discord Server</div>
+
+                <button class="nav-item" data-tab="discord-config" id="nav-discord-config">
+                    <div class="nav-icon">
+                        <svg class="morph-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 20V10M12 20V4M6 20v-6"></path>
+                            <circle cx="18" cy="7" r="3"></circle>
+                            <circle cx="6" cy="11" r="3"></circle>
+                        </svg>
+                    </div>
+                    <span>Server & Channels</span>
+                </button>
+
+                <button class="nav-item" data-tab="discord-tickets" id="nav-discord-tickets">
+                    <div class="nav-icon">
+                        <svg class="morph-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path>
+                            <path d="M13 5v2"></path>
+                            <path d="M13 17v2"></path>
+                            <path d="M13 11v2"></path>
+                        </svg>
+                    </div>
+                    <span>Support Tickets</span>
+                </button>
+
+                <button class="nav-item" data-tab="discord-moderation" id="nav-discord-moderation">
+                    <div class="nav-icon">
+                        <svg class="morph-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                    </div>
+                    <span>Moderation Cases</span>
+                </button>
             </nav>
 
             <div class="sidebar-footer">
@@ -468,6 +502,215 @@
                             </thead>
                             <tbody id="logs-table-body">
                                 <tr><td colspan="6" class="text-center">Loading logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: DISCORD SERVER & CHANNELS CONFIG -->
+            <section id="tab-discord-config" class="tab-panel">
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+                        <div>
+                            <h2 style="font-size: 1.25rem; font-weight: 700;">Discord Server & Channel Settings</h2>
+                            <p style="font-size: 0.8125rem; color: hsl(var(--muted-foreground));">Select a server to configure moderation log channels, tickets, roles, and welcome templates.</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 250px;">
+                            <label for="discord-guild-select" style="font-size: 0.875rem; font-weight: 600; white-space: nowrap;">Server (Guild):</label>
+                            <select id="discord-guild-select" class="filter-select" style="flex: 1;">
+                                <option value="">Loading servers...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guild Info Banner -->
+                <div id="guild-info-banner" class="card hidden" style="margin-bottom: 1.5rem; background: hsl(var(--accent)/0.3); border-color: hsl(var(--border));">
+                    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                        <img id="guild-banner-icon" src="" alt="Icon" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: hsl(var(--secondary)); border: 2px solid hsl(var(--border)); display: none;">
+                        <div style="flex: 1;">
+                            <h3 id="guild-banner-name" style="font-size: 1.1rem; font-weight: 700;">Server Name</h3>
+                            <div style="display: flex; gap: 1rem; font-size: 0.8125rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem; flex-wrap: wrap;">
+                                <span>ID: <code id="guild-banner-id" class="font-mono"></code></span>
+                                <span>Members: <strong id="guild-banner-members" style="color: hsl(var(--foreground));">0</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Form -->
+                <div id="guild-settings-card" class="card">
+                    <form id="discord-config-form">
+                        <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+                            <!-- Column 1: Channel Assignments -->
+                            <div>
+                                <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; color: hsl(var(--primary));">📢 Channel Assignments</h3>
+                                
+                                <div class="input-group">
+                                    <label for="cfg-mod-log">Moderation & Audit Log Channel</label>
+                                    <select id="cfg-mod-log">
+                                        <option value="">-- None (Disabled) --</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem;">Kicks, bans, timeouts, warns, and deleted messages are logged here.</span>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="cfg-welcome">Welcome Announcement Channel</label>
+                                    <select id="cfg-welcome">
+                                        <option value="">-- None (Disabled) --</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem;">New members will receive welcome cards in this channel.</span>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="cfg-leave">Leave Log Channel</label>
+                                    <select id="cfg-leave">
+                                        <option value="">-- None (Disabled) --</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem;">Logs when members leave or are kicked/banned from the server.</span>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="cfg-ticket-log">Ticket Transcripts Log Channel</label>
+                                    <select id="cfg-ticket-log">
+                                        <option value="">-- None (Disabled) --</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem;">Closed ticket transcripts and resolutions are archived here.</span>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="cfg-ticket-cat">Ticket Category Channel</label>
+                                    <select id="cfg-ticket-cat">
+                                        <option value="">-- None (Root category) --</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem;">Category under which new support ticket channels will be created.</span>
+                                </div>
+                            </div>
+
+                            <!-- Column 2: Roles & Messages -->
+                            <div>
+                                <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; color: hsl(var(--primary));">🎭 Roles & Messages</h3>
+
+                                <div class="input-group">
+                                    <label for="cfg-staff-role">Staff / Support Role</label>
+                                    <select id="cfg-staff-role">
+                                        <option value="">-- None --</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem;">Staff role allowed to view, claim, and respond to support tickets.</span>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="cfg-member-role">Member Auto-Role</label>
+                                    <select id="cfg-member-role">
+                                        <option value="">-- None --</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem;">Automatically assigned to new members immediately upon joining.</span>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="cfg-verify-role">Verification Role</label>
+                                    <select id="cfg-verify-role">
+                                        <option value="">-- None --</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem;">Granted when users click the /verify panel or complete verification.</span>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="cfg-welcome-msg">Welcome Message Template</label>
+                                    <input type="text" id="cfg-welcome-msg" placeholder="Welcome {user} to {server}! Enjoy your stay.">
+                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); margin-top: 0.25rem;">Placeholders: <code>{user}</code>, <code>{username}</code>, <code>{server}</code>, <code>{memberCount}</code></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                            <button type="submit" class="btn btn-primary" id="save-discord-config-btn">
+                                <svg class="morph-icon-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                <span>Save Server Settings</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- TAB 6: SUPPORT TICKETS -->
+            <section id="tab-discord-tickets" class="tab-panel">
+                <div class="card table-card">
+                    <div class="table-toolbar">
+                        <div>
+                            <h2 style="font-size: 1.125rem; font-weight: 700;">Support Tickets</h2>
+                            <p style="font-size: 0.8125rem; color: hsl(var(--muted-foreground));">All user tickets opened across Discord servers.</p>
+                        </div>
+                        <div class="table-filters">
+                            <select id="tickets-status-filter" class="filter-select">
+                                <option value="">All Statuses</option>
+                                <option value="open">Open</option>
+                                <option value="claimed">Claimed</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Ticket ID</th>
+                                    <th>Server</th>
+                                    <th>Owner</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Claimed By</th>
+                                    <th>Created At</th>
+                                    <th>Resolution</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tickets-table-body">
+                                <tr><td colspan="8" class="text-center">Loading tickets...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: MODERATION CASES -->
+            <section id="tab-discord-moderation" class="tab-panel">
+                <div class="card table-card">
+                    <div class="table-toolbar">
+                        <div>
+                            <h2 style="font-size: 1.125rem; font-weight: 700;">Server Moderation Cases</h2>
+                            <p style="font-size: 0.8125rem; color: hsl(var(--muted-foreground));">Audit log of warnings, timeouts, kicks, and bans.</p>
+                        </div>
+                        <div class="table-filters">
+                            <select id="moderation-action-filter" class="filter-select">
+                                <option value="">All Actions</option>
+                                <option value="WARN">Warn</option>
+                                <option value="TIMEOUT">Timeout</option>
+                                <option value="KICK">Kick</option>
+                                <option value="BAN">Ban</option>
+                                <option value="UNBAN">Unban</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Case ID</th>
+                                    <th>Action</th>
+                                    <th>Target User</th>
+                                    <th>Moderator</th>
+                                    <th>Reason</th>
+                                    <th>Duration</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="moderation-table-body">
+                                <tr><td colspan="7" class="text-center">Loading moderation cases...</td></tr>
                             </tbody>
                         </table>
                     </div>
