@@ -863,7 +863,8 @@ body {
     gap: 0.5rem;
 }
 
-.select-input {
+.select-input,
+.filter-select {
     height: 2.25rem;
     background-color: hsl(var(--background));
     border: 1px solid hsl(var(--input));
@@ -877,8 +878,10 @@ body {
     transition: var(--transition-spring);
 }
 
-.select-input:focus {
+.select-input:focus,
+.filter-select:focus {
     border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
 }
 
 .table-responsive {
@@ -940,34 +943,58 @@ body {
     border: 1px solid transparent;
 }
 
-.badge.active {
+.badge.active,
+.badge-emerald,
+.badge-success {
     background-color: rgba(16, 185, 129, 0.12);
     border-color: rgba(16, 185, 129, 0.3);
     color: var(--emerald-500);
 }
 
-.badge.revoked, .badge.expired {
+.badge.revoked,
+.badge.expired,
+.badge-rose,
+.badge-destructive {
     background-color: rgba(244, 63, 94, 0.12);
     border-color: rgba(244, 63, 94, 0.3);
     color: var(--rose-500);
 }
 
-.badge.premium {
+.badge.premium,
+.badge-violet,
+.badge-purple {
     background-color: rgba(139, 92, 246, 0.12);
     border-color: rgba(139, 92, 246, 0.3);
     color: var(--violet-500);
 }
 
-.badge.enterprise {
+.badge.enterprise,
+.badge-amber,
+.badge-warning {
     background-color: rgba(245, 158, 11, 0.12);
     border-color: rgba(245, 158, 11, 0.3);
     color: var(--amber-500);
 }
 
-.badge.free {
+.badge-indigo,
+.badge-blue {
+    background-color: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: var(--blue-500);
+}
+
+.badge.free,
+.badge-gray,
+.badge-secondary {
     background-color: hsl(var(--secondary));
     border-color: hsl(var(--border));
     color: hsl(var(--muted-foreground));
+}
+
+.badge-outline {
+    background-color: transparent;
+    border-color: hsl(var(--border));
+    color: hsl(var(--foreground));
 }
 
 .pill-badge {
@@ -1321,6 +1348,43 @@ input:checked + .slider:before {
 .text-center { text-align: center; }
 .text-muted { color: hsl(var(--muted-foreground)); }
 .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+/* shadcn form section header and hint styles */
+.form-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.625rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid hsl(var(--border));
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.form-section-header .morph-icon-svg {
+    color: hsl(var(--muted-foreground));
+    flex-shrink: 0;
+}
+
+.form-hint {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    margin-top: 0.25rem;
+    line-height: 1.4;
+    display: block;
+}
+
+/* Spinner Animation */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {

@@ -888,7 +888,7 @@ async function loadGuildDetails(guildId) {
             textChannels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
 
         const categoryOptionsHtml = '<option value="">-- None (Root category) --</option>' +
-            categoryChannels.map(c => `<option value="${c.id}">📁 ${c.name}</option>`).join('');
+            categoryChannels.map(c => `<option value="${c.id}">[Category] ${c.name}</option>`).join('');
 
         const roleOptionsHtml = '<option value="">-- None --</option>' +
             roles.filter(r => r.name !== '@everyone').map(r => `<option value="${r.id}">@ ${r.name}</option>`).join('');
@@ -946,7 +946,12 @@ if (discordConfigForm) {
 
         const originalBtnHtml = saveDiscordConfigBtn.innerHTML;
         saveDiscordConfigBtn.disabled = true;
-        saveDiscordConfigBtn.innerHTML = '<span>Saving...</span>';
+        saveDiscordConfigBtn.innerHTML = `
+            <svg class="morph-icon-svg animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+            </svg>
+            <span>Saving...</span>
+        `;
 
         try {
             const res = await apiCall(`/api/v1/admin/discord/guilds/${guildId}/config`, 'PUT', payload);
@@ -977,7 +982,14 @@ const ticketsStatusFilter = document.getElementById('tickets-status-filter');
 
 async function loadDiscordTickets() {
     if (!ticketsTableBody) return;
-    ticketsTableBody.innerHTML = '<tr><td colspan="8" class="text-center">Loading tickets...</td></tr>';
+    ticketsTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding: 2.5rem 1rem;">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">
+            <svg class="morph-icon-svg animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+            </svg>
+            <span style="font-size: 0.8125rem;">Loading tickets...</span>
+        </div>
+    </td></tr>`;
 
     const status = ticketsStatusFilter ? ticketsStatusFilter.value : '';
     let endpoint = '/api/v1/admin/discord/tickets?limit=50';
@@ -987,27 +999,37 @@ async function loadDiscordTickets() {
         const res = await apiCall(endpoint);
         if (res.success && res.tickets) {
             if (res.tickets.length === 0) {
-                ticketsTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No tickets found.</td></tr>';
+                ticketsTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted" style="padding: 3rem 1rem;">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;">
+                        <svg class="morph-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.4;">
+                            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path>
+                            <path d="M13 5v2"></path>
+                            <path d="M13 17v2"></path>
+                            <path d="M13 11v2"></path>
+                        </svg>
+                        <span style="font-size: 0.875rem;">No support tickets found.</span>
+                    </div>
+                </td></tr>`;
                 return;
             }
 
             ticketsTableBody.innerHTML = res.tickets.map(t => {
                 const statusBadge = t.status === 'open'
-                    ? '<span class="badge badge-emerald">OPEN</span>'
+                    ? '<span class="badge badge-emerald">Open</span>'
                     : (t.status === 'claimed'
-                        ? '<span class="badge badge-violet">CLAIMED</span>'
-                        : '<span class="badge badge-gray">CLOSED</span>');
+                        ? '<span class="badge badge-violet">Claimed</span>'
+                        : '<span class="badge badge-gray">Closed</span>');
 
                 const createdDate = t.createdAt ? new Date(t.createdAt).toLocaleString() : '-';
-                const claimed = t.claimedBy ? `<span style="color: hsl(var(--primary)); font-weight: 600;">${t.claimedBy.tag || t.claimedBy.id}</span>` : '<span class="text-muted">Unclaimed</span>';
+                const claimed = t.claimedBy ? `<span style="color: hsl(var(--foreground)); font-weight: 600;">${t.claimedBy.tag || t.claimedBy.id}</span>` : '<span class="text-muted">Unclaimed</span>';
                 const resolution = t.closeReason ? `<span style="font-size: 0.8rem; color: hsl(var(--muted-foreground));">${t.closeReason}</span>` : '<span class="text-muted">-</span>';
 
                 return `
                     <tr>
-                        <td><code class="font-mono" style="font-weight: 700; color: hsl(var(--primary));">${t.id}</code></td>
+                        <td><code class="font-mono" style="font-weight: 700; color: hsl(var(--foreground));">${t.id}</code></td>
                         <td><code class="font-mono text-muted">${t.guildId}</code></td>
                         <td><strong>${t.userTag || t.userId}</strong></td>
-                        <td><span class="badge badge-indigo">${(t.category || 'general').toUpperCase()}</span></td>
+                        <td><span class="badge badge-outline">${(t.category || 'general').toUpperCase()}</span></td>
                         <td>${statusBadge}</td>
                         <td>${claimed}</td>
                         <td style="font-size: 0.8125rem; white-space: nowrap;">${createdDate}</td>
@@ -1034,7 +1056,14 @@ const moderationActionFilter = document.getElementById('moderation-action-filter
 
 async function loadDiscordModeration() {
     if (!moderationTableBody) return;
-    moderationTableBody.innerHTML = '<tr><td colspan="7" class="text-center">Loading moderation cases...</td></tr>';
+    moderationTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding: 2.5rem 1rem;">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;">
+            <svg class="morph-icon-svg animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+            </svg>
+            <span style="font-size: 0.8125rem;">Loading moderation cases...</span>
+        </div>
+    </td></tr>`;
 
     const action = moderationActionFilter ? moderationActionFilter.value : '';
     let endpoint = '/api/v1/admin/discord/moderation?limit=50';
@@ -1044,7 +1073,14 @@ async function loadDiscordModeration() {
         const res = await apiCall(endpoint);
         if (res.success && res.cases) {
             if (res.cases.length === 0) {
-                moderationTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No moderation cases recorded.</td></tr>';
+                moderationTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding: 3rem 1rem;">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;">
+                        <svg class="morph-icon-svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.4;">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        <span style="font-size: 0.875rem;">No moderation cases recorded.</span>
+                    </div>
+                </td></tr>`;
                 return;
             }
 
